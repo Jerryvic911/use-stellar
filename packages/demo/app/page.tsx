@@ -5,12 +5,12 @@ type HookCard = { hook: string; path: string; desc: string; comingSoon?: boolean
 const hooks: HookCard[] = [
   { hook: "useWallet",          path: "/demo/wallet",      desc: "Connect and disconnect a Stellar wallet" },
   { hook: "useBalance",         path: "/demo/balance",     desc: "Fetch XLM or any asset balance" },
-  { hook: "useAccount",         path: "/demo/account",     desc: "Full account info — balances, signers, sequence" },
-  { hook: "useSendPayment",     path: "/demo/send",        desc: "Build, sign, and submit a payment" },
-  { hook: "useTransaction",     path: "/demo/transaction", desc: "Look up a transaction by hash" },
+  { hook: "useAccount",         path: "/demo/account",     desc: "Full account info — balances, signers, sequence", comingSoon: true },
+  { hook: "useSendPayment",     path: "/demo/send",        desc: "Build, sign, and submit a payment", comingSoon: true },
+  { hook: "useTransaction",     path: "/demo/transaction", desc: "Look up a transaction by hash", comingSoon: true },
   { hook: "useNetwork",         path: "/demo/network",     desc: "Current network and config" },
-  { hook: "useAsset",           path: "/demo/asset",       desc: "Asset metadata — supply, home domain" },
-  { hook: "useSorobanContract", path: "/demo/soroban",     desc: "Call a Soroban smart contract" },
+  { hook: "useAsset",           path: "/demo/asset",       desc: "Asset metadata — supply, home domain", comingSoon: true },
+  { hook: "useSorobanContract", path: "/demo/soroban",     desc: "Call a Soroban smart contract", comingSoon: true },
 ];
 
 export default function Home() {
@@ -84,7 +84,6 @@ function App() {
             borderRadius:   10,
             textDecoration: "none",
             color:          "inherit",
-            transition:     "border-color 0.15s",
             opacity:        comingSoon ? 0.5 : 1,
           };
 
@@ -109,7 +108,17 @@ function App() {
               {body}
             </div>
           ) : (
-            <Link key={hook} href={path} style={cardStyle}>
+            <Link
+              key={hook}
+              href={path}
+              style={{ ...cardStyle, transition: "border-color 0.15s" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "#7dd3fc";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "#2a2a2a";
+              }}
+            >
               {body}
             </Link>
           );
