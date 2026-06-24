@@ -1,5 +1,6 @@
 import { useCallback } from "react"
 import { getNetworkDetails, isConnected, requestAccess } from "@stellar/freighter-api"
+import albedo from "@albedo-link/intent"
 import { useStellarContext } from "../context/StellarProvider"
 import type { WalletState, WalletType } from "../types"
 
@@ -29,6 +30,8 @@ export function useWallet(): UseWalletReturn {
 
         if (walletType === "freighter") {
           address = await connectFreighter(network)
+        } else if (walletType === "albedo") {
+          address = await connectAlbedo()
         } else {
           throw new Error(
             `Wallet "${walletType}" not yet supported. ` +
@@ -67,6 +70,17 @@ export function useWallet(): UseWalletReturn {
   }, [setWallet])
 
   return { ...wallet, connect, disconnect }
+}
+
+// ── Albedo connector ───────────────────────────────────────────────────────
+async function connectAlbedo(): Promise<string> {
+  const result = await albedo.publicKey({})
+
+  if (!result.pubkey) {
+    throw new Error("Albedo did not return a public key.")
+  }
+
+  return result.pubkey
 }
 
 // ── Freighter connector ────────────────────────────────────────────────────

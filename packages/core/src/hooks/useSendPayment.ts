@@ -8,6 +8,7 @@ import {
   Memo,
 } from "@stellar/stellar-sdk"
 import { signTransaction } from "@stellar/freighter-api"
+import albedo from "@albedo-link/intent"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer, isNativeAsset } from "../utils"
 import type { SendPaymentOptions, SendPaymentResult, Asset } from "../types"
@@ -73,24 +74,51 @@ export function useSendPayment(): UseSendPaymentReturn {
         const tx = builder.build()
         const xdr = tx.toXDR()
 
-        // ── Sign with Freighter ──────────────────────────────────────────
-        const signedTransaction = await signTransaction(xdr, {
-          networkPassphrase: networkPass,
-          address: wallet.address,
-        })
-        if (signedTransaction.error) {
-          throw new Error(signedTransaction.error.message)
-        }
-        if (!signedTransaction.signedTxXdr) {
-          throw new Error("Freighter did not return a signed transaction.")
-        }
+        // ── Sign & submit ────────────────────────────────────────────────
+        let txHash: string
 
-        // ── Submit ───────────────────────────────────────────────────────
-        const signed = TransactionBuilder.fromXDR(signedTransaction.signedTxXdr, networkPass)
-        const res = await server.submitTransaction(signed)
+        if (wallet.wallet === "albedo") {
+          // Albedo signs and submits in one shot via albedo.pay()
+          const albedoNetwork = network === "mainnet" ? "public" : "testnet"
+          const payParams: Parameters<typeof albedo.pay>[0] = {
+            amount: options.amount,
+            destination: options.to,
+            network: albedoNetwork,
+            submit: true,
+          }
+
+          if (!isNativeAsset(options.asset)) {
+            payParams.asset_code = options.asset.code
+            payParams.asset_issuer = options.asset.issuer
+          }
+
+          if (options.memo) {
+            payParams.memo = options.memo
+            payParams.memo_type = "text"
+          }
+
+          const albedoResult = await albedo.pay(payParams)
+          txHash = albedoResult.tx_hash
+        } else {
+          // Default: Freighter signs, we submit manually
+          const signedTransaction = await signTransaction(xdr, {
+            networkPassphrase: networkPass,
+            address: wallet.address,
+          })
+          if (signedTransaction.error) {
+            throw new Error(signedTransaction.error.message)
+          }
+          if (!signedTransaction.signedTxXdr) {
+            throw new Error("Freighter did not return a signed transaction.")
+          }
+
+          const signed = TransactionBuilder.fromXDR(signedTransaction.signedTxXdr, networkPass)
+          const res = await server.submitTransaction(signed)
+          txHash = res.hash
+        }
 
         const outcome: SendPaymentResult = {
-          hash: res.hash,
+          hash: txHash,
           status: "success",
         }
 

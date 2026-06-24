@@ -3,16 +3,20 @@ import { useWallet, shortenAddress } from "use-stellar"
 import { DemoCard } from "../../../components/DemoCard"
 
 export default function WalletDemo() {
-  const { connect, disconnect, connected, address, connecting, error, network } = useWallet()
+  const { connect, disconnect, connected, address, connecting, error, network, wallet } =
+    useWallet()
 
   return (
     <DemoCard
       hook="useWallet"
-      description="Connect and disconnect a Stellar wallet. Currently supports Freighter — more wallets tracked as GitHub issues."
+      description="Connect and disconnect a Stellar wallet. Supports Freighter (browser extension) and Albedo (web popup — no extension needed)."
       code={`const { connect, disconnect, connected, address } = useWallet()
 
-// Connect Freighter
+// Connect Freighter (browser extension)
 await connect("freighter")
+
+// Connect Albedo (web popup — no extension needed)
+await connect("albedo")
 
 // Disconnect
 disconnect()`}
@@ -21,6 +25,7 @@ disconnect()`}
         {connected ? (
           <>
             <Row label="Status" value="Connected ✓" color="#4ade80" />
+            <Row label="Wallet" value={wallet ?? ""} />
             <Row label="Address" value={shortenAddress(address ?? "")} />
             <Row label="Network" value={network ?? ""} />
             <button onClick={disconnect} style={btnStyle("#c00")}>
@@ -37,6 +42,13 @@ disconnect()`}
               style={btnStyle("#1d4ed8")}
             >
               {connecting ? "Connecting..." : "Connect Freighter"}
+            </button>
+            <button
+              onClick={() => connect("albedo")}
+              disabled={connecting}
+              style={btnStyle("#7c3aed")}
+            >
+              {connecting ? "Connecting..." : "Connect Albedo"}
             </button>
           </>
         )}
