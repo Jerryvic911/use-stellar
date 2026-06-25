@@ -155,6 +155,70 @@ import { StellarProvider } from "use-stellar";
 
 ---
 
+## Next.js App Router (SSR)
+
+`use-stellar` is safe to import in server components — it never touches `window` or wallet extension APIs at module load time. However, wallet connection and transaction signing are browser-only, so any component that calls `useWallet`, `useSendPayment`, or other interactive hooks must be a client component.
+
+### Pattern
+
+Create a thin client wrapper for the provider and your interactive components:
+
+```tsx
+// app/providers.tsx
+"use client";
+import { StellarProvider } from "use-stellar";
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <StellarProvider network="testnet">
+      {children}
+    </StellarProvider>
+  );
+}
+```
+
+```tsx
+// app/layout.tsx
+import { Providers } from "./providers";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+```tsx
+// app/wallet-button.tsx
+"use client";
+import { useWallet } from "use-stellar";
+
+export function WalletButton() {
+  const { connect, disconnect, connected, address } = useWallet();
+
+  return connected
+    ? <button onClick={disconnect}>{address}</button>
+    : <button onClick={() => connect()}>Connect Freighter</button>;
+}
+```
+
+### Server-side behaviour
+
+| Hook | Server-side behaviour |
+|---|---|
+| `StellarProvider` | Renders normally, no browser APIs used |
+| `useWallet` | Returns disconnected state; `connect()` sets a clear error |
+| `useBalance`, `useAccount`, `useTransaction`, `useAsset` | Fetch via Horizon — works server-side if an address is supplied |
+| `useSendPayment` | `send()` throws a clear error if called before hydration |
+| `useNetwork` | Pure context read — always safe |
+| `isBrowser()` | Utility exported for your own SSR guards |
+
+---
+
 ## Supported wallets
 
 | Wallet | Status |
