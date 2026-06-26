@@ -38,15 +38,15 @@ export type StellarErrorCode =
   | "WALLET_NOT_INSTALLED"
   | "WALLET_NOT_CONNECTED"
   | "NETWORK_ERROR"
-  | "UNKNOWN";
+  | "UNKNOWN"
 
 export interface StellarError {
-  code: StellarErrorCode;
-  message: string;
-  raw?: unknown;
+  code: StellarErrorCode
+  message: string
+  raw?: unknown
 }
 
-export type WalletType = "freighter" | "albedo" | "rabet";
+export type WalletType = "freighter" | "albedo" | "rabet"
 
 /**
  * The current state of the wallet connection.
@@ -157,16 +157,16 @@ export interface ContractCallOptions {
  * Context value provided by the StellarProvider.
  */
 export interface ClaimableBalanceClaimant {
-  destination: string;
-  predicate: object;
+  destination: string
+  predicate: object
 }
 
 export interface ClaimableBalance {
-  id: string;
-  asset: string;
-  amount: string;
-  claimants: ClaimableBalanceClaimant[];
-  sponsor?: string;
+  id: string
+  asset: string
+  amount: string
+  claimants: ClaimableBalanceClaimant[]
+  sponsor?: string
 }
 
 export interface StellarContextValue {

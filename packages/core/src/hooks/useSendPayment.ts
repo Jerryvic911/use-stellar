@@ -7,7 +7,6 @@ import {
   Asset as StellarAsset,
   Memo,
 } from "@stellar/stellar-sdk"
-import albedo from "@albedo-link/intent"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer, isNativeAsset, isBrowser } from "../utils"
 import type { SendPaymentOptions, SendPaymentResult, Asset } from "../types"
@@ -84,7 +83,9 @@ export function useSendPayment(): UseSendPaymentReturn {
         let txHash: string
 
         if (wallet.wallet === "albedo") {
-          // Albedo signs and submits in one shot via albedo.pay()
+          // Dynamic import keeps @albedo-link/intent out of the SSR/test bundle
+          const albedoModule = await import("@albedo-link/intent")
+          const albedo = albedoModule.default ?? albedoModule
           const albedoNetwork = network === "mainnet" ? "public" : "testnet"
           const payParams: Parameters<typeof albedo.pay>[0] = {
             amount: options.amount,

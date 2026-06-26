@@ -1,6 +1,6 @@
 import { useCallback } from "react"
-import albedo from "@albedo-link/intent"
 import { useStellarContext } from "../context/StellarProvider"
+import { isBrowser } from "../utils"
 import type { WalletState, WalletType } from "../types"
 
 export interface UseWalletReturn extends WalletState {
@@ -81,13 +81,11 @@ export function useWallet(): UseWalletReturn {
   return { ...wallet, connect, disconnect }
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-function isBrowser(): boolean {
-  return typeof window !== "undefined"
-}
-
 // ── Albedo connector ───────────────────────────────────────────────────────
 async function connectAlbedo(): Promise<string> {
+  // Dynamic import keeps @albedo-link/intent out of the SSR/test bundle
+  const albedoModule = await import("@albedo-link/intent")
+  const albedo = albedoModule.default ?? albedoModule
   const result = await albedo.publicKey({})
 
   if (!result.pubkey) {
