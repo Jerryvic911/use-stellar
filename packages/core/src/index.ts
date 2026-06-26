@@ -35,6 +35,7 @@ export type {
 
 // ── Utils (public) ─────────────────────────────────────────────────────────
 export {
+  isBrowser,
   isValidStellarAddress,
   shortenAddress,
   formatAmount,

@@ -14,7 +14,7 @@ const { signTransaction } =
     ? freighterApi
     : (freighterApi as any).default;
 import { useStellarContext } from "../context/StellarProvider";
-import { getHorizonServer, isNativeAsset } from "../utils";
+import { getHorizonServer, isNativeAsset, isBrowser } from "../utils";
 import type { SendPaymentOptions, SendPaymentResult, Asset } from "../types";
 
 export interface UseSendPaymentReturn {
@@ -36,6 +36,13 @@ export function useSendPayment(): UseSendPaymentReturn {
     async (options: SendPaymentOptions): Promise<SendPaymentResult> => {
       if (!wallet.connected || !wallet.address) {
         throw new Error("Wallet not connected. Call connect() first.");
+      }
+
+      if (!isBrowser()) {
+        throw new Error(
+          "Transaction signing is only available in the browser. " +
+          "Move your component to a \"use client\" boundary in Next.js / Remix."
+        );
       }
 
       setLoading(true);
@@ -70,6 +77,8 @@ export function useSendPayment(): UseSendPaymentReturn {
         const xdr = tx.toXDR();
 
         // ── Sign with Freighter ──────────────────────────────────────────
+        // Dynamic import keeps @stellar/freighter-api out of the SSR bundle.
+        const { signTransaction } = await import("@stellar/freighter-api");
         const signedTransaction = await signTransaction(xdr, {
           networkPassphrase: networkPass,
           address: wallet.address,
