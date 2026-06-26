@@ -38,6 +38,14 @@ npm install
 npm run test
 ```
 
+### Run package smoke tests
+
+Verify the published package imports and type resolution integrity locally:
+
+```bash
+npm run test:package
+```
+
 ### Run the demo app
 
 ```bash
