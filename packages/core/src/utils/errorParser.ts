@@ -1,5 +1,21 @@
 import type { StellarError, StellarErrorCode } from "../types"
 
+interface HorizonErrorResponse {
+  extras?: {
+    result_codes?: {
+      transaction?: string
+      operations?: string[]
+    }
+  }
+}
+
+interface ErrorWithResponse {
+  response?: {
+    status?: number
+    data?: HorizonErrorResponse
+  }
+}
+
 export function parseStellarError(error: unknown): StellarError {
   // 1. Pass-through if it's already a structured StellarError
   if (error && typeof error === "object" && "code" in error && "message" in error) {
@@ -12,7 +28,8 @@ export function parseStellarError(error: unknown): StellarError {
 
   // Type guard for Axios/Horizon style error responses
   const hasResponseData = error && typeof error === "object" && "response" in error
-  const responseData: any = hasResponseData ? (error as any).response?.data : null
+  const errorWithResponse = hasResponseData ? (error as ErrorWithResponse) : null
+  const responseData = errorWithResponse?.response?.data ?? null
 
   // 2. Map Horizon Errors
   if (responseData?.extras?.result_codes) {
@@ -42,7 +59,7 @@ export function parseStellarError(error: unknown): StellarError {
   }
 
   // 4. Map 404s
-  const status = hasResponseData ? (error as any).response?.status : null
+  const status = errorWithResponse?.response?.status ?? null
   if (status === 404 || rawMessage.includes("404")) {
     code = "ACCOUNT_NOT_FOUND"
     message = "The requested account or resource could not be found on the ledger."
