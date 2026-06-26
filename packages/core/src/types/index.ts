@@ -145,6 +145,20 @@ export interface SendPaymentResult {
 }
 
 /**
+ * A normalized payment record for display or processing.
+ */
+export interface NormalizedPayment {
+  id: string
+  type: string
+  from: string
+  to: string
+  amount: string
+  asset: Asset
+  createdAt: string
+  transactionHash: string
+}
+
+/**
  * Options for calling a Soroban smart contract.
  */
 export interface ContractCallOptions {

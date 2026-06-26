@@ -27,6 +27,7 @@ export type {
   TransactionStatus,
   SendPaymentOptions,
   SendPaymentResult,
+  NormalizedPayment,
   ContractCallOptions,
   StellarContextValue,
   ClaimableBalance,
