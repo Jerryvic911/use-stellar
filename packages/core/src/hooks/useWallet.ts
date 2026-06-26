@@ -82,9 +82,12 @@ export function useWallet(): UseWalletReturn {
 // ── Freighter connector ────────────────────────────────────────────────────
 async function connectFreighter(network: string): Promise<string> {
   // Dynamic import keeps @stellar/freighter-api out of the SSR bundle.
-  let freighterApi = await import("@stellar/freighter-api")
+  const freighterApi = await import("@stellar/freighter-api")
   const { isConnected, requestAccess, getNetworkDetails } =
-    typeof freighterApi.isConnected === "function" ? freighterApi : (freighterApi as any).default
+    typeof freighterApi.isConnected === "function"
+      ? freighterApi
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      : (freighterApi as any).default
 
   const connection = await isConnected()
   if (connection.error || !connection.isConnected) {

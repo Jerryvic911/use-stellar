@@ -12,6 +12,7 @@ export interface UseYourHookReturn {
 
 export function useYourHook(): UseYourHookReturn {
   const { network } = useStellarContext()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [data, setData] = useState<unknown | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<StellarError | null>(null)

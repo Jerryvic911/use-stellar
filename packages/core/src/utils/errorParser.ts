@@ -12,6 +12,7 @@ export function parseStellarError(error: unknown): StellarError {
 
   // Type guard for Axios/Horizon style error responses
   const hasResponseData = error && typeof error === "object" && "response" in error
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const responseData: any = hasResponseData ? (error as any).response?.data : null
 
   // 2. Map Horizon Errors
@@ -42,6 +43,7 @@ export function parseStellarError(error: unknown): StellarError {
   }
 
   // 4. Map 404s
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const status = hasResponseData ? (error as any).response?.status : null
   if (status === 404 || rawMessage.includes("404")) {
     code = "ACCOUNT_NOT_FOUND"
