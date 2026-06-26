@@ -1,5 +1,4 @@
 import { useCallback } from "react"
-import { getNetworkDetails, isConnected, requestAccess } from "@stellar/freighter-api"
 import albedo from "@albedo-link/intent"
 import { useStellarContext } from "../context/StellarProvider"
 import type { WalletState, WalletType } from "../types"
@@ -23,17 +22,17 @@ export function useWallet(): UseWalletReturn {
 
   const connect = useCallback(
     async (walletType: WalletType = "freighter") => {
-      setWallet(prev => ({ ...prev, connecting: true, error: null }))
       if (!isBrowser()) {
         setWallet(prev => ({
           ...prev,
-          error: "Wallet connection is only available in the browser. " +
-                 "Move your component to a \"use client\" boundary in Next.js / Remix.",
-        }));
-        return;
+          error:
+            "Wallet connection is only available in the browser. " +
+            'Move your component to a "use client" boundary in Next.js / Remix.',
+        }))
+        return
       }
 
-      setWallet(prev => ({ ...prev, connecting: true, error: null }));
+      setWallet(prev => ({ ...prev, connecting: true, error: null }))
 
       try {
         let address: string
@@ -82,6 +81,11 @@ export function useWallet(): UseWalletReturn {
   return { ...wallet, connect, disconnect }
 }
 
+// ── Helpers ────────────────────────────────────────────────────────────────
+function isBrowser(): boolean {
+  return typeof window !== "undefined"
+}
+
 // ── Albedo connector ───────────────────────────────────────────────────────
 async function connectAlbedo(): Promise<string> {
   const result = await albedo.publicKey({})
@@ -95,15 +99,13 @@ async function connectAlbedo(): Promise<string> {
 
 // ── Freighter connector ────────────────────────────────────────────────────
 async function connectFreighter(network: string): Promise<string> {
-  const connection = await isConnected()
-  // Dynamic import keeps @stellar/freighter-api out of the SSR bundle.
-  const { isConnected, requestAccess, getNetworkDetails } =
-    await import("@stellar/freighter-api");
+  // Dynamic import keeps @stellar/freighter-api out of the SSR bundle
+  const { isConnected, requestAccess, getNetworkDetails } = await import("@stellar/freighter-api")
 
-  const connection = await isConnected();
+  const connection = await isConnected()
   if (connection.error || !connection.isConnected) {
     throw new Error(
-      "Freighter wallet not found. " + "Install the Freighter browser extension and try again."
+      "Freighter wallet not found. Install the Freighter browser extension and try again."
     )
   }
 
@@ -121,7 +123,6 @@ async function connectFreighter(network: string): Promise<string> {
     throw new Error(networkDetails.error.message)
   }
 
-  // Validate we're on the right network
   const expectedPassphrase =
     network === "mainnet"
       ? "Public Global Stellar Network ; September 2015"
