@@ -10,13 +10,13 @@ import {
 } from "use-stellar";
 import { DemoCard } from "../../../components/DemoCard";
 
-type AccountBalance = NonNullable<ReturnType<typeof useAccount>["account"]>["balances"][number];
+type AccountBalance = NonNullable<ReturnType<typeof useAccount>["data"]>["balances"][number];
 
 export default function AccountDemo() {
   const { address } = useWallet();
   const [input, setInput] = useState("");
   const inspectedAddress = input.trim() || address;
-  const { account, loading, error, refetch } = useAccount({ address: inspectedAddress });
+  const { data, loading, error, refetch } = useAccount({ address: inspectedAddress });
 
   useEffect(() => {
     if (address && !input) setInput(address);
@@ -26,7 +26,7 @@ export default function AccountDemo() {
     <DemoCard
       hook="useAccount"
       description="Inspect a Stellar testnet account by address, including balances, thresholds, and signers."
-      code={`const { account, loading, error, refetch } = useAccount({
+      code={`const { data, loading, error, refetch } = useAccount({
   address: "G...",
 })`}
     >
@@ -45,25 +45,25 @@ export default function AccountDemo() {
         {!inspectedAddress && <Text color="#facc15">Connect a wallet or paste any testnet G... address.</Text>}
         {error && <Text color="#f87171">{error}</Text>}
 
-        {account && (
+        {data && (
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <section style={sectionStyle}>
-              <Row label="Address" value={shortenAddress(account.address)} />
-              <Row label="Sequence" value={account.sequence} />
-              <Row label="Subentries" value={String(account.subentryCount)} />
+              <Row label="Address" value={shortenAddress(data.address)} />
+              <Row label="Sequence" value={data.sequence} />
+              <Row label="Subentries" value={String(data.subentryCount)} />
             </section>
 
             <section style={sectionStyle}>
               <Heading>Thresholds</Heading>
-              <Row label="Low" value={String(account.thresholds.lowThreshold)} />
-              <Row label="Medium" value={String(account.thresholds.medThreshold)} />
-              <Row label="High" value={String(account.thresholds.highThreshold)} />
+              <Row label="Low" value={String(data.thresholds.lowThreshold)} />
+              <Row label="Medium" value={String(data.thresholds.medThreshold)} />
+              <Row label="High" value={String(data.thresholds.highThreshold)} />
             </section>
 
             <section style={sectionStyle}>
               <Heading>Balances</Heading>
-              {account.balances.length > 0 ? (
-                account.balances.map(balance => <BalanceRow key={balanceKey(balance)} balance={balance} />)
+              {data.balances.length > 0 ? (
+                data.balances.map(balance => <BalanceRow key={balanceKey(balance)} balance={balance} />)
               ) : (
                 <Text color="#666">No balances found.</Text>
               )}
@@ -71,8 +71,8 @@ export default function AccountDemo() {
 
             <section style={sectionStyle}>
               <Heading>Signers</Heading>
-              {account.signers.length > 0 ? (
-                account.signers.map(signer => (
+              {data.signers.length > 0 ? (
+                data.signers.map(signer => (
                   <div
                     key={`${signer.key}:${signer.type}`}
                     style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 10, fontSize: 13 }}

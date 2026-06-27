@@ -8,7 +8,7 @@ export interface UseAccountOptions {
 }
 
 export interface UseAccountReturn {
-  account:  AccountInfo | null;
+  data:  AccountInfo | null;
   loading:  boolean
   error:    string | null;
   refetch:  () => void;
@@ -18,7 +18,7 @@ export function useAccount({ address }: UseAccountOptions = {}): UseAccountRetur
   const { network, wallet }      = useStellarContext();
   const resolvedAddress          = address ?? wallet.address;
 
-  const [account, setAccount]    = useState<AccountInfo | null>(null);
+  const [data, setData]          = useState<AccountInfo | null>(null);
   const [loading, setLoading]    = useState(false);
   const [error,   setError]      = useState<string | null>(null);
 
@@ -49,7 +49,7 @@ export function useAccount({ address }: UseAccountOptions = {}): UseAccountRetur
         })),
       };
 
-      setAccount(info);
+      setData(info);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch account");
     } finally {
@@ -61,5 +61,5 @@ export function useAccount({ address }: UseAccountOptions = {}): UseAccountRetur
     fetchAccount();
   }, [fetchAccount]);
 
-  return { account, loading, error, refetch: fetchAccount };
+  return { data, loading, error, refetch: fetchAccount };
 }
