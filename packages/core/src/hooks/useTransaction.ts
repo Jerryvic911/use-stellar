@@ -33,6 +33,7 @@ export function useTransaction({
 
     setLoading(true);
     setError(null);
+    setTransaction(null);
 
     try {
       const server = getHorizonServer(network);

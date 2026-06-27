@@ -27,6 +27,7 @@ export function useAccount({ address }: UseAccountOptions = {}): UseAccountRetur
 
     setLoading(true);
     setError(null);
+    setAccount(null);
 
     try {
       const server  = getHorizonServer(network);

@@ -1,6 +1,7 @@
 import { renderHook, waitFor, act } from "@testing-library/react";
 import React                   from "react";
 import { StellarProvider }     from "../context/StellarProvider";
+import * as utils              from "../utils";
 import { useClaimableBalance } from "./useClaimableBalance";
 
 // ── Mock @stellar/stellar-sdk ──────────────────────────────────────────────
@@ -10,11 +11,6 @@ const mockCall      = jest.fn();
 const mockClaimant  = jest.fn(() => ({ call: mockCall }));
 const mockClaimableBalances = jest.fn(() => ({ claimant: mockClaimant }));
 
-jest.mock("../utils", () => ({
-  getHorizonServer: jest.fn(() => ({
-    claimableBalances: mockClaimableBalances,
-  })),
-}));
 
 // ── Test wrapper ───────────────────────────────────────────────────────────
 function wrapper({ children }: { children: React.ReactNode }) {
@@ -43,7 +39,17 @@ const MOCK_RECORD_WITH_SPONSOR = {
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  jest.restoreAllMocks();
+  mockCall.mockReset();
+  mockClaimant.mockReset();
+  mockClaimableBalances.mockReset();
+  mockClaimant.mockReturnValue({ call: mockCall });
+  mockClaimableBalances.mockReturnValue({ claimant: mockClaimant });
+  jest
+    .spyOn(utils, "getHorizonServer")
+    .mockReturnValue({
+      claimableBalances: mockClaimableBalances,
+    } as any);
 });
 
 describe("useClaimableBalance — no address", () => {
