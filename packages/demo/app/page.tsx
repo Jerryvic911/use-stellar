@@ -1,6 +1,12 @@
 import Link from "next/link"
 
-const hooks = [
+interface HookCard {
+  name: string
+  desc: string
+  href: string
+}
+
+const hooks: HookCard[] = [
   { name: "useWallet", desc: "Connect Freighter, get address", href: "/demo/wallet" },
   { name: "useBalance", desc: "Fetch XLM or any asset balance", href: "/demo/balance" },
   { name: "useAccount", desc: "Full account info — balances, signers", href: "/demo/account" },

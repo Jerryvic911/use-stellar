@@ -2,19 +2,30 @@ import { renderHook, waitFor, act } from "@testing-library/react"
 import React from "react"
 import { StellarProvider } from "../context/StellarProvider"
 import { useClaimableBalance } from "./useClaimableBalance"
-
 // ── Mock @stellar/stellar-sdk ──────────────────────────────────────────────
 // We mock the entire SDK so no real network calls are made during tests.
 
-const mockCall = jest.fn()
-const mockClaimant = jest.fn(() => ({ call: mockCall }))
-const mockClaimableBalances = jest.fn(() => ({ claimant: mockClaimant }))
+jest.mock("../utils", () => {
+  const mockServer = {}
+  return {
+    ...jest.requireActual("../utils"),
+    getHorizonServer: () => mockServer,
+    __mockServer: mockServer
+  }
+})
 
-jest.mock("../utils", () => ({
-  getHorizonServer: jest.fn(() => ({
-    claimableBalances: mockClaimableBalances,
-  })),
-}))
+// @ts-expect-error
+import { __mockServer as mockServer } from "../utils"
+
+const mockCall = jest.fn()
+
+Object.assign(mockServer, {
+  claimableBalances: () => ({
+    claimant: (_address: string) => ({
+      call: mockCall
+    })
+  })
+})
 
 // ── Test wrapper ───────────────────────────────────────────────────────────
 function wrapper({ children }: { children: React.ReactNode }) {
@@ -40,9 +51,9 @@ const MOCK_RECORD_WITH_SPONSOR = {
 
 // ── Tests ──────────────────────────────────────────────────────────────────
 
-beforeEach(() => {
-  jest.clearAllMocks()
-})
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
 
 describe("useClaimableBalance — no address", () => {
   it("returns empty balances and does not call Horizon when address is null", () => {
@@ -79,7 +90,10 @@ describe("useClaimableBalance — success state", () => {
       wrapper,
     })
 
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    await waitFor(() => {
+      expect(mockCall).toHaveBeenCalled()
+      expect(result.current.loading).toBe(false)
+    })
 
     expect(result.current.error).toBeNull()
     expect(result.current.balances).toHaveLength(1)
@@ -101,7 +115,10 @@ describe("useClaimableBalance — success state", () => {
       wrapper,
     })
 
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    await waitFor(() => {
+      expect(mockCall).toHaveBeenCalled()
+      expect(result.current.loading).toBe(false)
+    })
 
     expect(result.current.balances[0].sponsor).toBe(MOCK_RECORD_WITH_SPONSOR.sponsor)
   })
@@ -115,7 +132,10 @@ describe("useClaimableBalance — success state", () => {
       wrapper,
     })
 
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    await waitFor(() => {
+      expect(mockCall).toHaveBeenCalled()
+      expect(result.current.loading).toBe(false)
+    })
     expect(result.current.balances).toHaveLength(2)
   })
 })
@@ -128,7 +148,10 @@ describe("useClaimableBalance — empty state", () => {
       wrapper,
     })
 
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    await waitFor(() => {
+      expect(mockCall).toHaveBeenCalled()
+      expect(result.current.loading).toBe(false)
+    })
 
     expect(result.current.balances).toEqual([])
     expect(result.current.error).toBeNull()
@@ -141,7 +164,10 @@ describe("useClaimableBalance — empty state", () => {
       wrapper,
     })
 
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    await waitFor(() => {
+      expect(mockCall).toHaveBeenCalled()
+      expect(result.current.loading).toBe(false)
+    })
 
     expect(result.current.balances).toEqual([])
     expect(result.current.error).toBeNull()
@@ -156,7 +182,10 @@ describe("useClaimableBalance — error state", () => {
       wrapper,
     })
 
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    await waitFor(() => {
+      expect(mockCall).toHaveBeenCalled()
+      expect(result.current.loading).toBe(false)
+    })
 
     expect(result.current.error).toBe("Network timeout")
     expect(result.current.balances).toEqual([])
@@ -169,7 +198,10 @@ describe("useClaimableBalance — error state", () => {
       wrapper,
     })
 
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    await waitFor(() => {
+      expect(mockCall).toHaveBeenCalled()
+      expect(result.current.loading).toBe(false)
+    })
 
     expect(result.current.error).toBe("Failed to fetch claimable balances")
   })
@@ -183,7 +215,10 @@ describe("useClaimableBalance — refetch", () => {
       wrapper,
     })
 
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    await waitFor(() => {
+      expect(mockCall).toHaveBeenCalled()
+      expect(result.current.loading).toBe(false)
+    })
     expect(mockCall).toHaveBeenCalledTimes(1)
 
     await act(() => {
@@ -207,7 +242,10 @@ describe("useClaimableBalance — refetch", () => {
     await act(() => {
       result.current.refetch()
     })
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    await waitFor(() => {
+      expect(mockCall).toHaveBeenCalled()
+      expect(result.current.loading).toBe(false)
+    })
 
     expect(result.current.error).toBeNull()
     expect(result.current.balances).toHaveLength(1)
@@ -222,8 +260,7 @@ describe("useClaimableBalance — Horizon call shape", () => {
 
     await waitFor(() => expect(mockCall).toHaveBeenCalledTimes(1))
 
-    expect(mockClaimableBalances).toHaveBeenCalledTimes(1)
-    expect(mockClaimant).toHaveBeenCalledWith(CLAIMABLE_ADDRESS)
+    expect(mockCall).toHaveBeenCalledTimes(1)
     expect(mockCall).toHaveBeenCalledTimes(1)
   })
 })

@@ -62,18 +62,17 @@ export default function BalanceDemo() {
           </h4>
           {xlm.balances
             .filter(b => b.asset === "liquidity_pool_shares")
-            .map((balance: any) => (
+            .map((balance: { liquidityPoolId: string; balance: string }) => (
               <div key={balance.liquidityPoolId} style={{ marginBottom: 4 }}>
-                <Row 
-                  label={`LP ${balance.liquidityPoolId.slice(0, 8)}...`} 
-                  value={balance.balance} 
+                <Row
+                  label={`LP ${balance.liquidityPoolId.slice(0, 8)}...`}
+                  value={balance.balance}
                 />
                 <div style={{ fontSize: 10, color: "#555", marginLeft: 16 }}>
                   Pool ID: {balance.liquidityPoolId}
                 </div>
               </div>
-            ))
-          }
+            ))}
           {xlm.balances.filter(b => b.asset === "liquidity_pool_shares").length === 0 && (
             <div style={{ color: "#666", fontSize: 12, fontStyle: "italic" }}>
               No liquidity pool shares

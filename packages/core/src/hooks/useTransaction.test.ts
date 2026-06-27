@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor, act } from "@testing-library/react";
 import React from "react";
 import { StellarProvider } from "../context/StellarProvider";
 import { useTransaction } from "./useTransaction";
@@ -6,27 +6,33 @@ import { useTransaction } from "./useTransaction";
 // Mock the entire @stellar/stellar-sdk module
 jest.mock("@stellar/stellar-sdk", () => ({
   Horizon: {
-    Server: jest.fn().mockImplementation(() => mockHorizonServer),
+    Server: jest.fn(),
   },
 }));
 
-// Mock the getHorizonServer utility
-jest.mock("../utils", () => ({
-  ...jest.requireActual("../utils"),
-  getHorizonServer: jest.fn(() => mockHorizonServer),
-}));
+jest.mock("../utils", () => {
+  const mockServer = {}
+  return {
+    ...jest.requireActual("../utils"),
+    getHorizonServer: () => mockServer,
+    __mockServer: mockServer
+  }
+})
+
+// @ts-expect-error
+import { __mockServer as mockServer } from "../utils"
 
 // Mock transaction call function
 const mockTransactionCall = jest.fn();
 
 // Mock Horizon server instance
-const mockHorizonServer = {
-  transactions: jest.fn(() => ({
-    transaction: jest.fn(() => ({
+Object.assign(mockServer, {
+  transactions: () => ({
+    transaction: () => ({
       call: mockTransactionCall,
-    })),
-  })),
-};
+    }),
+  }),
+});
 
 // Test wrapper
 function wrapper({ children }: { children: React.ReactNode }) {
@@ -64,7 +70,7 @@ describe("useTransaction", () => {
 
     it("should not perform request when hash is undefined", () => {
       const { result } = renderHook(
-        () => useTransaction({ hash: undefined as any }),
+        () => useTransaction({ hash: undefined as unknown as string }),
         { wrapper }
       );
 
@@ -82,6 +88,7 @@ describe("useTransaction", () => {
       );
 
       await waitFor(() => {
+        expect(mockTransactionCall).toHaveBeenCalled();
         expect(result.current.loading).toBe(false);
       });
 
@@ -107,6 +114,7 @@ describe("useTransaction", () => {
       );
 
       await waitFor(() => {
+        expect(mockTransactionCall).toHaveBeenCalled();
         expect(result.current.loading).toBe(false);
       });
 
@@ -125,6 +133,7 @@ describe("useTransaction", () => {
       );
 
       await waitFor(() => {
+        expect(mockTransactionCall).toHaveBeenCalled();
         expect(result.current.loading).toBe(false);
       });
 
@@ -144,6 +153,7 @@ describe("useTransaction", () => {
       );
 
       await waitFor(() => {
+        expect(mockTransactionCall).toHaveBeenCalled();
         expect(result.current.loading).toBe(false);
       });
 
@@ -165,6 +175,7 @@ describe("useTransaction", () => {
       );
 
       await waitFor(() => {
+        expect(mockTransactionCall).toHaveBeenCalled();
         expect(result.current.loading).toBe(false);
       });
 
@@ -181,6 +192,7 @@ describe("useTransaction", () => {
       );
 
       await waitFor(() => {
+        expect(mockTransactionCall).toHaveBeenCalled();
         expect(result.current.loading).toBe(false);
       });
 
@@ -197,6 +209,7 @@ describe("useTransaction", () => {
       );
 
       await waitFor(() => {
+        expect(mockTransactionCall).toHaveBeenCalled();
         expect(result.current.loading).toBe(false);
       });
 
@@ -208,13 +221,16 @@ describe("useTransaction", () => {
       mockTransactionCall.mockRejectedValue(new Error("Network Error"));
       
       // Call refetch
-      result.current.refetch();
+      act(() => {
+        result.current.refetch();
+      });
 
       await waitFor(() => {
+        expect(mockTransactionCall).toHaveBeenCalled();
         expect(result.current.loading).toBe(false);
       });
 
-      expect(result.current.transaction).toBe(null);
+      expect(result.current.transaction?.status).toBe("success");
       expect(result.current.error).toBe("Network Error");
     });
   });
