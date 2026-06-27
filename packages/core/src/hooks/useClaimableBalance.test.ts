@@ -10,7 +10,7 @@ jest.mock("../utils", () => {
   return {
     ...jest.requireActual("../utils"),
     getHorizonServer: () => mockServer,
-    __mockServer: mockServer
+    __mockServer: mockServer,
   }
 })
 
@@ -22,9 +22,9 @@ const mockCall = jest.fn()
 Object.assign(mockServer, {
   claimableBalances: () => ({
     claimant: (_address: string) => ({
-      call: mockCall
-    })
-  })
+      call: mockCall,
+    }),
+  }),
 })
 
 // ── Test wrapper ───────────────────────────────────────────────────────────
@@ -51,9 +51,9 @@ const MOCK_RECORD_WITH_SPONSOR = {
 
 // ── Tests ──────────────────────────────────────────────────────────────────
 
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
+beforeEach(() => {
+  jest.clearAllMocks()
+})
 
 describe("useClaimableBalance — no address", () => {
   it("returns empty balances and does not call Horizon when address is null", () => {

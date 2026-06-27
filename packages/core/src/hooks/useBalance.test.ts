@@ -15,7 +15,7 @@ jest.mock("../utils", () => {
   return {
     ...jest.requireActual("../utils"),
     getHorizonServer: () => mockServer,
-    __mockServer: mockServer
+    __mockServer: mockServer,
   }
 })
 
@@ -184,9 +184,7 @@ describe("useBalance", () => {
 
   describe("error handling", () => {
     it("should handle account not found error", async () => {
-      mockServer.loadAccount.mockRejectedValue(
-        new Error("Request failed with status code 404")
-      )
+      mockServer.loadAccount.mockRejectedValue(new Error("Request failed with status code 404"))
 
       const { result } = renderHook(() => useBalance({ address: TEST_ADDRESS }), { wrapper })
 

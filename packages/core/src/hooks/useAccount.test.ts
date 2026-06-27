@@ -15,7 +15,7 @@ jest.mock("../utils", () => {
   return {
     ...jest.requireActual("../utils"),
     getHorizonServer: () => mockServer,
-    __mockServer: mockServer
+    __mockServer: mockServer,
   }
 })
 
@@ -146,9 +146,7 @@ describe("useAccount", () => {
 
   describe("error state", () => {
     it("should handle account not found error", async () => {
-      mockServer.loadAccount.mockRejectedValue(
-        new Error("Request failed with status code 404")
-      )
+      mockServer.loadAccount.mockRejectedValue(new Error("Request failed with status code 404"))
 
       const { result } = renderHook(() => useAccount({ address: TEST_ADDRESS }), { wrapper })
 
@@ -198,9 +196,7 @@ describe("useAccount", () => {
     })
 
     it("should transition from loading to error correctly", async () => {
-      mockServer.loadAccount.mockRejectedValue(
-        new Error("Request failed with status code 404")
-      )
+      mockServer.loadAccount.mockRejectedValue(new Error("Request failed with status code 404"))
 
       const { result } = renderHook(() => useAccount({ address: TEST_ADDRESS }), { wrapper })
 

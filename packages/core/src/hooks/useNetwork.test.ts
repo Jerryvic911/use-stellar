@@ -51,7 +51,7 @@ describe("useNetwork", () => {
   describe("stable state", () => {
     it("should maintain stable values across re-renders", () => {
       const { result, rerender } = renderHook(() => useNetwork(), {
-        wrapper: createWrapper("testnet")
+        wrapper: createWrapper("testnet"),
       })
 
       const firstResult = result.current
@@ -69,7 +69,7 @@ describe("useNetwork", () => {
 
     it("should return referentially stable networkConfig object", () => {
       const { result, rerender } = renderHook(() => useNetwork(), {
-        wrapper: createWrapper("testnet")
+        wrapper: createWrapper("testnet"),
       })
 
       const firstConfig = result.current.networkConfig
@@ -90,7 +90,7 @@ describe("useNetwork", () => {
       const wrapper = ({ children }: { children: React.ReactNode }) => {
         return React.createElement(StellarProvider, { network: currentNetwork, children })
       }
-      
+
       const { result, rerender } = renderHook(() => useNetwork(), { wrapper })
 
       expect(result.current.network).toBe("testnet")
