@@ -1,21 +1,9 @@
-"use client";
-import { useWallet, useNetwork, shortenAddress } from "use-stellar";
-import { DemoCard }                              from "../../../components/DemoCard";
+"use client"
+import { useWallet, shortenAddress } from "use-stellar"
+import { DemoCard } from "../../../components/DemoCard"
 
 export default function WalletDemo() {
-  const { 
-    connect, 
-    disconnect, 
-    connected, 
-    address, 
-    connecting, 
-    error, 
-    network: walletProviderNetwork,
-    walletNetwork,
-    refreshWalletNetwork,
-    isNetworkMismatch,
-  } = useWallet();
-  const { network: providerNetwork } = useNetwork();
+  const { connect, disconnect, connected, address, connecting, error, network } = useWallet()
 
   return (
     <DemoCard
@@ -48,7 +36,7 @@ disconnect()`}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {connected ? (
           <>
-            <Row label="Status"  value="Connected ✓" color="#4ade80" />
+            <Row label="Status" value="Connected ✓" color="#4ade80" />
             <Row label="Address" value={shortenAddress(address ?? "")} />
             <Row 
               label="Provider Network" 
@@ -99,22 +87,36 @@ disconnect()`}
         )}
       </div>
     </DemoCard>
-  );
+  )
 }
 
-function Row({ label, value, color = "#e0e0e0" }: { label: string; value: string; color?: string }) {
+function Row({
+  label,
+  value,
+  color = "#e0e0e0",
+}: {
+  label: string
+  value: string
+  color?: string
+}) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
       <span style={{ color: "#666" }}>{label}</span>
       <span style={{ color, fontFamily: "monospace" }}>{value}</span>
     </div>
-  );
+  )
 }
 
 function btnStyle(bg: string): React.CSSProperties {
   return {
-    padding: "10px 20px", background: bg, color: "#fff",
-    border: "none", borderRadius: 8, cursor: "pointer",
-    fontSize: 14, fontWeight: 500, marginTop: 8,
-  };
+    padding: "10px 20px",
+    background: bg,
+    color: "#fff",
+    border: "none",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontSize: 14,
+    fontWeight: 500,
+    marginTop: 8,
+  }
 }
