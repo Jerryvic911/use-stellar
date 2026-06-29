@@ -3,18 +3,19 @@ import React from "react"
 import { StellarProvider } from "../context/StellarProvider"
 import { useClaimableBalance } from "./useClaimableBalance"
 
-// ── Mock @stellar/stellar-sdk ──────────────────────────────────────────────
-// We mock the entire SDK so no real network calls are made during tests.
+// ── Mock ../utils ──────────────────────────────────────────────────────────
+jest.mock("../utils", () => ({
+  getHorizonServer: jest.fn(),
+  isBrowser: jest.fn(() => true),
+}))
+
+import { getHorizonServer } from "../utils"
+
+const mockGetHorizonServer = getHorizonServer as jest.Mock
 
 const mockCall = jest.fn()
 const mockClaimant = jest.fn(() => ({ call: mockCall }))
 const mockClaimableBalances = jest.fn(() => ({ claimant: mockClaimant }))
-
-jest.mock("../utils", () => ({
-  getHorizonServer: jest.fn(() => ({
-    claimableBalances: mockClaimableBalances,
-  })),
-}))
 
 // ── Test wrapper ───────────────────────────────────────────────────────────
 function wrapper({ children }: { children: React.ReactNode }) {
@@ -42,6 +43,9 @@ const MOCK_RECORD_WITH_SPONSOR = {
 
 beforeEach(() => {
   jest.clearAllMocks()
+  mockGetHorizonServer.mockReturnValue({
+    claimableBalances: mockClaimableBalances,
+  })
 })
 
 describe("useClaimableBalance — no address", () => {
@@ -57,14 +61,12 @@ describe("useClaimableBalance — no address", () => {
 
 describe("useClaimableBalance — loading state", () => {
   it("sets loading=true while the request is in flight", async () => {
-    // Never resolve so we can observe the loading state
     mockCall.mockReturnValue(new Promise(() => {}))
 
     const { result } = renderHook(() => useClaimableBalance({ address: CLAIMABLE_ADDRESS }), {
       wrapper,
     })
 
-    // Loading should flip to true on the first render after the effect fires
     await waitFor(() => expect(result.current.loading).toBe(true))
     expect(result.current.balances).toEqual([])
     expect(result.current.error).toBeNull()
@@ -193,7 +195,6 @@ describe("useClaimableBalance — refetch", () => {
   })
 
   it("clears a previous error on refetch", async () => {
-    // First call errors, second succeeds
     mockCall
       .mockRejectedValueOnce(new Error("Network timeout"))
       .mockResolvedValueOnce({ records: [MOCK_RECORD] })
