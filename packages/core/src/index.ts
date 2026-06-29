@@ -1,3 +1,4 @@
+// Stellar React SDK - Main entry point
 // ── Provider ───────────────────────────────────────────────────────────────
 export { StellarProvider } from "./context/StellarProvider"
 
@@ -10,6 +11,9 @@ export { useTransaction } from "./hooks/useTransaction"
 export { useNetwork } from "./hooks/useNetwork"
 export { useAsset } from "./hooks/useAsset"
 export { useSorobanContract } from "./hooks/useSorobanContract"
+
+// ── Validation utilities ────────────────────────────────────────────────────
+export { isValidAssetCode, isValidStellarAddress } from "./utils"
 
 // ── Types ──────────────────────────────────────────────────────────────────
 export type {

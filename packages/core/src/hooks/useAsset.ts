@@ -18,6 +18,7 @@ export interface AssetInfo {
 export interface UseAssetOptions {
   code: string
   issuer: string
+  autoFetch?: boolean
 }
 
 export interface UseAssetReturn {
@@ -33,12 +34,21 @@ export interface UseAssetReturn {
  * @param options - Configuration options
  * @param options.code - The asset code (e.g., "USDC")
  * @param options.issuer - The asset issuer's Stellar address
+ * @param options.autoFetch - Whether to automatically fetch on mount and when parameters change (default: true)
  * @returns `{ asset, loading, error, refetch }`
  *
  * @example
  * const { asset, loading } = useAsset({ code: "USDC", issuer: "G..." })
+ * 
+ * @example
+ * const { asset, loading, error, refetch } = useAsset({ 
+ *   code: "USDC", 
+ *   issuer: "G...",
+ *   autoFetch: false
+ * })
  */
-export function useAsset({ code, issuer }: UseAssetOptions): UseAssetReturn {
+export function useAsset({ code, issuer, autoFetch = true }: UseAssetOptions): UseAssetReturn {
+
   const { network } = useStellarContext()
 
   const [asset, setAsset] = useState<AssetInfo | null>(null)
@@ -77,7 +87,9 @@ export function useAsset({ code, issuer }: UseAssetOptions): UseAssetReturn {
   }, [code, issuer, network])
 
   useEffect(() => {
-    fetchAsset()
+    if (autoFetch) {
+      fetchAsset()
+    }
   }, [fetchAsset])
 
   return { asset, loading, error, refetch: fetchAsset }
