@@ -250,14 +250,16 @@ describe("useAccount", () => {
   })
 
   describe("stale responses and unmounting", () => {
-   it("should not set state if unmounted before fetch resolves", async () => {
+    it("should not set state if unmounted before fetch resolves", async () => {
       let resolveFetch: (value: typeof mockAccountData) => void = () => {}
-      const promise = new Promise((resolve) => {
+      const promise = new Promise(resolve => {
         resolveFetch = resolve
       })
       mockServer.loadAccount.mockReturnValue(promise)
 
-      const { result, unmount } = renderHook(() => useAccount({ address: TEST_ADDRESS }), { wrapper })
+      const { result, unmount } = renderHook(() => useAccount({ address: TEST_ADDRESS }), {
+        wrapper,
+      })
 
       expect(result.current.loading).toBe(true)
 
@@ -272,12 +274,14 @@ describe("useAccount", () => {
       let resolveFirst: (value: typeof mockAccountData) => void = () => {}
       let resolveSecond: (value: typeof mockAccountData) => void = () => {}
 
-      const promise1 = new Promise((resolve) => { resolveFirst = resolve })
-      const promise2 = new Promise((resolve) => { resolveSecond = resolve })
+      const promise1 = new Promise(resolve => {
+        resolveFirst = resolve
+      })
+      const promise2 = new Promise(resolve => {
+        resolveSecond = resolve
+      })
 
-      mockServer.loadAccount
-        .mockReturnValueOnce(promise1)
-        .mockReturnValueOnce(promise2)
+      mockServer.loadAccount.mockReturnValueOnce(promise1).mockReturnValueOnce(promise2)
 
       const { result, rerender } = renderHook(({ address }) => useAccount({ address }), {
         initialProps: { address: TEST_ADDRESS },
