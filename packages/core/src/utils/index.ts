@@ -1,5 +1,5 @@
 import { Horizon } from "@stellar/stellar-sdk"
-import type { Asset, Balance, NetworkConfig, StellarNetwork } from "../types"
+import type { Asset, Balance, NetworkConfig, StellarNetwork, IssuedAsset } from "../types"
 import { NETWORK_CONFIGS } from "../types"
 
 // ── Environment helpers ───────────────────────────────────────────────────
@@ -22,8 +22,14 @@ export function isNativeAsset(asset: Asset): asset is "XLM" {
   return asset === "XLM"
 }
 
+export function isIssuedAsset(asset: Asset): asset is IssuedAsset {
+  return typeof asset === "object" && "code" in asset
+}
+
 export function formatAssetCode(asset: Asset): string {
-  return isNativeAsset(asset) ? "XLM" : asset.code
+  if (isNativeAsset(asset)) return "XLM"
+  if (isIssuedAsset(asset)) return asset.code
+  return asset // "liquidity_pool_shares"
 }
 
 export function parseHorizonBalance(raw: Horizon.HorizonApi.BalanceLine): Balance {
@@ -41,7 +47,7 @@ export function parseHorizonBalance(raw: Horizon.HorizonApi.BalanceLine): Balanc
       asset: "liquidity_pool_shares",
       balance: lp.balance,
       liquidityPoolId: lp.liquidity_pool_id,
-    } as unknown as Balance
+    } as Balance
   }
 
   const issued = raw as Horizon.HorizonApi.BalanceLineAsset

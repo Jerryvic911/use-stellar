@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer, parseHorizonBalance } from "../utils"
 import type { Asset, Balance } from "../types"
 
 export interface UseBalanceOptions {
-  address?: string | null // defaults to connected wallet address
-  asset?: Asset // defaults to XLM
-  watch?: boolean // re-fetch every 10s
+  address?: string | null
+  asset?: Asset
+  watch?: boolean
 }
 
 export interface UseBalanceReturn {
@@ -41,21 +41,30 @@ export function useBalance({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const requestRef = useRef(0)
+
   const fetchBalances = useCallback(async () => {
     if (!resolvedAddress) return
 
+    const fetchId = ++requestRef.current
     setLoading(true)
     setError(null)
 
     try {
       const server = getHorizonServer(network)
       const account = await server.loadAccount(resolvedAddress)
+
+      if (fetchId !== requestRef.current) return
+
       const parsed = account.balances.map(parseHorizonBalance)
       setBalances(parsed)
     } catch (err) {
+      if (fetchId !== requestRef.current) return
       setError(err instanceof Error ? err.message : "Failed to fetch balance")
     } finally {
-      setLoading(false)
+      if (fetchId === requestRef.current) {
+        setLoading(false)
+      }
     }
   }, [resolvedAddress, network])
 
@@ -64,11 +73,17 @@ export function useBalance({
 
     if (watch) {
       const interval = setInterval(fetchBalances, 10_000)
-      return () => clearInterval(interval)
+      return () => {
+        requestRef.current = -1
+        clearInterval(interval)
+      }
+    }
+
+    return () => {
+      requestRef.current = -1
     }
   }, [fetchBalances, watch])
 
-  // Find the specific asset balance
   const match = balances.find(b => {
     if (asset === "XLM") return b.asset === "XLM"
     if (typeof asset === "object" && typeof b.asset === "object") {
@@ -78,11 +93,5 @@ export function useBalance({
   })
   const balance = match?.balance ?? null
 
-  return {
-    balance,
-    balances,
-    loading,
-    error,
-    refetch: fetchBalances,
-  }
+  return { balance, balances, loading, error, refetch: fetchBalances }
 }

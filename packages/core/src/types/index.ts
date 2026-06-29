@@ -76,7 +76,7 @@ export interface IssuedAsset {
 /**
  * Can be either a native asset or an issued asset.
  */
-export type Asset = NativeAsset | IssuedAsset
+export type Asset = NativeAsset | IssuedAsset | "liquidity_pool_shares"
 
 /**
  * Represents a balance entry for an account.
@@ -87,6 +87,7 @@ export interface Balance {
   limit?: string
   buying?: string
   selling?: string
+  liquidityPoolId?: string
 }
 
 /**

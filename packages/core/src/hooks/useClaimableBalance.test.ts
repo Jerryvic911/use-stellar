@@ -43,6 +43,9 @@ const MOCK_RECORD_WITH_SPONSOR = {
 
 beforeEach(() => {
   jest.clearAllMocks()
+  // Re-wire after clearAllMocks resets everything
+  mockClaimant.mockImplementation(() => ({ call: mockCall }))
+  mockClaimableBalances.mockImplementation(() => ({ claimant: mockClaimant }))
   mockGetHorizonServer.mockReturnValue({
     claimableBalances: mockClaimableBalances,
   })

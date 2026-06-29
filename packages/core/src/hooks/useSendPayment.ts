@@ -8,7 +8,7 @@ import {
   Memo,
 } from "@stellar/stellar-sdk"
 import { useStellarContext } from "../context/StellarProvider"
-import { getHorizonServer, isNativeAsset, isBrowser } from "../utils"
+import { getHorizonServer, isNativeAsset, isIssuedAsset, isBrowser } from "../utils"
 import type { SendPaymentOptions, SendPaymentResult, Asset } from "../types"
 
 export interface UseSendPaymentReturn {
@@ -94,7 +94,7 @@ export function useSendPayment(): UseSendPaymentReturn {
             submit: true,
           }
 
-          if (!isNativeAsset(options.asset)) {
+          if (!isNativeAsset(options.asset) && isIssuedAsset(options.asset)) {
             payParams.asset_code = options.asset.code
             payParams.asset_issuer = options.asset.issuer
           }
@@ -154,5 +154,6 @@ export function useSendPayment(): UseSendPaymentReturn {
 // ── Convert our Asset type to Stellar SDK Asset ────────────────────────────
 function toStellarAsset(asset: Asset): StellarAsset {
   if (isNativeAsset(asset)) return StellarAsset.native()
-  return new StellarAsset(asset.code, asset.issuer)
+  if (isIssuedAsset(asset)) return new StellarAsset(asset.code, asset.issuer)
+  return StellarAsset.native() // fallback for liquidity_pool_shares
 }
