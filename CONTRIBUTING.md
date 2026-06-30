@@ -59,6 +59,26 @@ To test hooks that require a wallet (like `useWallet` and `useSendPayment`), ins
 
 ---
 
+## Code quality
+
+This project uses Husky to enforce code quality automatically.
+
+Before every commit — Prettier formats your staged files and ESLint checks
+them. If either fails your commit is blocked. Fix the errors and try again.
+
+Before every push — the SDK is built and all tests are run. If either fails
+your push is blocked.
+
+To run checks manually at any time:
+
+```bash
+pnpm format       # format all files
+pnpm lint         # run ESLint
+pnpm typecheck    # run TypeScript compiler check
+```
+
+---
+
 ## Adding a new hook
 
 This is the most common contribution and follows a clear pattern.
@@ -162,6 +182,28 @@ fix: useBalance not updating on address change
 test: add useAccount unit tests
 docs: add useSendPayment example to README
 ```
+
+---
+
+## Releases
+
+Releases are automated via `.github/workflows/release.yml`.
+
+To publish a new version:
+
+1. Update `CHANGELOG.md` — move items from `[Unreleased]` to a new versioned section, e.g. `## [0.2.0] - 2026-06-24`.
+2. Bump the version in `packages/core/package.json`.
+3. Commit and push, then tag the commit:
+
+```bash
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+The workflow will automatically:
+- Run tests and build
+- Publish `packages/core` to npm (requires `NODE_AUTH_TOKEN` secret set in repository settings)
+- Create a GitHub Release with the changelog notes for that version
 
 ---
 

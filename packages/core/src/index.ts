@@ -1,10 +1,11 @@
 // ── Provider ───────────────────────────────────────────────────────────────
-export { StellarProvider }      from "./context/StellarProvider";
+export { StellarProvider } from "./context/StellarProvider"
 
 // ── Hooks ──────────────────────────────────────────────────────────────────
 export { useWallet }            from "./hooks/useWallet";
 export { useBalance }           from "./hooks/useBalance";
 export { useAccount }           from "./hooks/useAccount";
+export { useFriendbot }         from "./hooks/useFriendbot";
 export { useSendPayment }       from "./hooks/useSendPayment";
 export { useTransaction }       from "./hooks/useTransaction";
 export { useNetwork }           from "./hooks/useNetwork";
@@ -12,6 +13,28 @@ export { useAsset }             from "./hooks/useAsset";
 export { useSorobanContract }   from "./hooks/useSorobanContract";
 export { usePayments }          from "./hooks/usePayments";
 export { useClaimableBalance }  from "./hooks/useClaimableBalance";
+export { useWallet } from "./hooks/useWallet"
+export { useBalance } from "./hooks/useBalance"
+export { useAccount } from "./hooks/useAccount"
+export { useSendPayment } from "./hooks/useSendPayment"
+export { useTransaction } from "./hooks/useTransaction"
+export type { UseTransactionOptions, UseTransactionReturn } from "./hooks/useTransaction"
+export { useNetwork } from "./hooks/useNetwork"
+export { useAsset } from "./hooks/useAsset"
+export { useSorobanContract } from "./hooks/useSorobanContract"
+export { useClaimableBalance } from "./hooks/useClaimableBalance"
+
+// ── Errors ─────────────────────────────────────────────────────────────────
+export {
+  StellarError,
+  createStellarError,
+  toStellarError,
+  isStellarError,
+  isStellarErrorCode,
+  STELLAR_ERROR_CODES,
+  DEFAULT_ERROR_MESSAGES,
+} from "./errors"
+export type { StellarErrorCode, StellarErrorOptions } from "./errors"
 
 // ── Types ──────────────────────────────────────────────────────────────────
 export type {
@@ -35,12 +58,13 @@ export type {
   UsePaymentsReturn,
   ClaimableBalance,
   ClaimableBalanceClaimant,
-} from "./types";
+} from "./types"
 
 // ── Utils (public) ─────────────────────────────────────────────────────────
 export {
+  isBrowser,
   isValidStellarAddress,
   shortenAddress,
   formatAmount,
   formatAssetCode,
-} from "./utils";
+} from "./utils"
