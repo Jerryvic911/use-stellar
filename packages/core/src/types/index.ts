@@ -42,6 +42,13 @@ export type WalletType = "freighter" | "albedo" | "rabet"
  * The current state of the wallet connection.
  */
 export interface WalletState {
+  connected: boolean;
+  address: string | null;
+  network: StellarNetwork | null;
+  wallet: WalletType | null;
+  connecting: boolean;
+  error: string | null;
+  walletNetwork: StellarNetwork | null; // Actual network from wallet extension
   connected: boolean
   address: string | null
   network: StellarNetwork | null

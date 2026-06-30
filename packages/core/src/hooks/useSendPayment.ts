@@ -54,8 +54,16 @@ export function useSendPayment(): UseSendPaymentReturn {
         )
       }
 
-      setLoading(true)
-      setError(null)
+      // Check for network mismatch
+      if (wallet.walletNetwork && wallet.network !== wallet.walletNetwork) {
+        throw new Error(
+          `Network mismatch: Provider is on ${wallet.network} but wallet is on ${wallet.walletNetwork}. ` +
+          `Switch your wallet to ${wallet.network} or call refreshWalletNetwork() to update.`
+        );
+      }
+
+      setLoading(true);
+      setError(null);
 
       try {
         const server = getHorizonServer(network)
