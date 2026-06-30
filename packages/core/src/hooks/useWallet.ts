@@ -4,6 +4,7 @@ import { isBrowser } from "../utils"
 import type { WalletState, WalletType, StellarNetwork } from "../types"
 import { createStellarError, toStellarError } from "../errors"
 import type { WalletState, WalletType } from "../types"
+import { getWalletAdapter } from "../wallets"
 
 export interface UseWalletReturn extends WalletState {
   connect: (wallet?: WalletType) => Promise<void>
@@ -15,7 +16,7 @@ export interface UseWalletReturn extends WalletState {
 /**
  * Manages wallet connection state and provides functions to connect and disconnect.
  *
- * @returns `{ connected, address, network, wallet, connecting, error, connect, disconnect }`
+ * @returns `{ connected, address, network, wallet, walletName, connecting, error, connect, disconnect }`
  *
  * @example
  * const { address, connect, disconnect } = useWallet()
@@ -41,6 +42,8 @@ export function useWallet(): UseWalletReturn {
       setWallet(prev => ({ ...prev, connecting: true, error: null }))
 
       try {
+        const adapter = getWalletAdapter(walletType)
+        const connection = await adapter.connect(network)
         let address: string
         let walletNetwork: StellarNetwork
 
@@ -58,9 +61,10 @@ export function useWallet(): UseWalletReturn {
 
         setWallet({
           connected: true,
-          address,
-          network,
-          wallet: walletType,
+          address: connection.address,
+          network: connection.network,
+          wallet: connection.wallet,
+          walletName: adapter.metadata.name,
           connecting: false,
           error: null,
           walletNetwork,
@@ -77,16 +81,21 @@ export function useWallet(): UseWalletReturn {
   )
 
   const disconnect = useCallback(() => {
+    if (wallet.wallet) {
+      void getWalletAdapter(wallet.wallet).disconnect?.()
+    }
+
     setWallet({
       connected: false,
       address: null,
       network: null,
       wallet: null,
+      walletName: null,
       connecting: false,
       error: null,
       walletNetwork: null,
     })
-  }, [setWallet])
+  }, [setWallet, wallet.wallet])
 
   const refreshWalletNetwork = useCallback(async () => {
     if (!wallet.connected || wallet.wallet !== "freighter") {

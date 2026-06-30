@@ -10,6 +10,8 @@ import {
 
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer, isNativeAsset, isBrowser } from "../utils"
+import { getWalletAdapter } from "../wallets"
+import type { SendPaymentOptions, SendPaymentResult, Asset } from "../types"
 import { createStellarError, toStellarError } from "../errors"
 import type { SendPaymentOptions, SendPaymentResult, Asset, StellarError } from "../types"
 
@@ -45,6 +47,9 @@ export function useSendPayment(): UseSendPaymentReturn {
           "Wallet not connected. Call connect() first."
         )
       }
+      if (!wallet.wallet) {
+        throw new Error("No wallet adapter selected. Call connect() first.")
+      }
 
       if (!isBrowser()) {
         throw createStellarError(
@@ -70,7 +75,6 @@ export function useSendPayment(): UseSendPaymentReturn {
         const sourceAcc = await server.loadAccount(wallet.address)
         const networkPass = network === "mainnet" ? Networks.PUBLIC : Networks.TESTNET
 
-        // ── Build the operation ──────────────────────────────────────────
         const stellarAsset = toStellarAsset(options.asset)
         const operation = Operation.payment({
           destination: options.to,
@@ -78,7 +82,6 @@ export function useSendPayment(): UseSendPaymentReturn {
           amount: options.amount,
         })
 
-        // ── Build the transaction ────────────────────────────────────────
         const builder = new TransactionBuilder(sourceAcc, {
           fee: BASE_FEE,
           networkPassphrase: networkPass,
@@ -92,23 +95,14 @@ export function useSendPayment(): UseSendPaymentReturn {
 
         const tx = builder.build()
         const xdr = tx.toXDR()
-
-        // ── Sign with Freighter ──────────────────────────────────────────
-        // Dynamic import keeps @stellar/freighter-api out of the SSR bundle.
-        const { signTransaction } = await import("@stellar/freighter-api")
-        const signedTransaction = await signTransaction(xdr, {
-          networkPassphrase: networkPass,
+        const adapter = getWalletAdapter(wallet.wallet)
+        const signedTxXdr = await adapter.signTransaction(xdr, {
           address: wallet.address,
+          network,
+          networkPassphrase: networkPass,
         })
-        if (signedTransaction.error) {
-          throw new Error(signedTransaction.error.message)
-        }
-        if (!signedTransaction.signedTxXdr) {
-          throw new Error("Freighter did not return a signed transaction.")
-        }
 
-        // ── Submit ───────────────────────────────────────────────────────
-        const signed = TransactionBuilder.fromXDR(signedTransaction.signedTxXdr, networkPass)
+        const signed = TransactionBuilder.fromXDR(signedTxXdr, networkPass)
         const res = await server.submitTransaction(signed)
 
         const outcome: SendPaymentResult = {
@@ -137,7 +131,6 @@ export function useSendPayment(): UseSendPaymentReturn {
   return { send, loading, error, result, reset }
 }
 
-// ── Convert our Asset type to Stellar SDK Asset ────────────────────────────
 function toStellarAsset(asset: Asset): StellarAsset {
   if (isNativeAsset(asset)) return StellarAsset.native()
   return new StellarAsset(asset.code, asset.issuer)

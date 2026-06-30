@@ -1,4 +1,3 @@
-// ── Provider ───────────────────────────────────────────────────────────────
 export { StellarProvider } from "./context/StellarProvider"
 
 // ── Hooks ──────────────────────────────────────────────────────────────────
@@ -23,6 +22,14 @@ export { useNetwork } from "./hooks/useNetwork"
 export { useAsset } from "./hooks/useAsset"
 export { useSorobanContract } from "./hooks/useSorobanContract"
 export { useClaimableBalance } from "./hooks/useClaimableBalance"
+export {
+  FREIGHTER_WALLET_TYPE,
+  NETWORK_PASSPHRASES,
+  WalletAdapterError,
+  freighterAdapter,
+  getWalletAdapter,
+  getWalletAdapters,
+} from "./wallets"
 
 // ── Errors ─────────────────────────────────────────────────────────────────
 export {
@@ -59,8 +66,15 @@ export type {
   ClaimableBalance,
   ClaimableBalanceClaimant,
 } from "./types"
+export type {
+  SignTransactionOptions,
+  WalletAdapter,
+  WalletAdapterErrorCode,
+  WalletAdapterMetadata,
+  WalletConnection,
+  WalletNetworkDetails,
+} from "./wallets"
 
-// ── Utils (public) ─────────────────────────────────────────────────────────
 export {
   isBrowser,
   isValidStellarAddress,

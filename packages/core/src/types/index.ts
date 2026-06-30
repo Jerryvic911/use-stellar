@@ -53,6 +53,7 @@ export interface WalletState {
   address: string | null
   network: StellarNetwork | null
   wallet: WalletType | null
+  walletName: string | null
   connecting: boolean
   error: StellarError | null
 }
