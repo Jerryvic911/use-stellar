@@ -78,6 +78,14 @@ export interface LiquidityPoolAsset {
 }
 
 /**
+ * Extended asset information with validation metadata.
+ */
+export interface AssetMetadata extends IssuedAsset {
+  verified: boolean
+  timestamp: number
+}
+
+/**
  * Can be either a native asset or an issued asset.
  */
 export type Asset = NativeAsset | IssuedAsset

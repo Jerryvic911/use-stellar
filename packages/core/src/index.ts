@@ -1,3 +1,5 @@
+// Stellar React SDK - Main entry point
+// ── Provider ───────────────────────────────────────────────────────────────
 export { StellarProvider } from "./context/StellarProvider"
 
 // ── Hooks ──────────────────────────────────────────────────────────────────
@@ -42,6 +44,9 @@ export {
   DEFAULT_ERROR_MESSAGES,
 } from "./errors"
 export type { StellarErrorCode, StellarErrorOptions } from "./errors"
+
+// ── Validation utilities ────────────────────────────────────────────────────
+export { isValidAssetCode, isValidStellarAddress } from "./utils"
 
 // ── Types ──────────────────────────────────────────────────────────────────
 export type {
