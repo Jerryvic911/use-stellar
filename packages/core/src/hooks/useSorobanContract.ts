@@ -46,6 +46,16 @@ function toScVal(arg: unknown): xdr.ScVal {
 
 function isValidContractId(id: string): boolean {
   return typeof id === "string" && /^C[A-Z2-7]{55}$/.test(id);
+import { useState, useEffect, useCallback, useRef } from "react"
+import { useStellarContext } from "../context/StellarProvider"
+import { toStellarError } from "../errors"
+import type { ContractCallOptions, StellarError } from "../types"
+
+export interface UseSorobanContractReturn {
+  data: unknown | null
+  loading: boolean
+  error: StellarError | null
+  refetch: () => void
 }
 
 export function useSorobanContract({
@@ -104,6 +114,31 @@ export function useSorobanContract({
       const tx = new TransactionBuilder(sourceAccount, {
         fee: BASE_FEE,
         networkPassphrase,
+  const [data, setData] = useState<unknown | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<StellarError | null>(null)
+
+  const requestRef = useRef(0)
+
+  const callContract = useCallback(async () => {
+    const fetchId = ++requestRef.current
+    setLoading(true)
+    setError(null)
+
+    try {
+      if (!contractId || !method) {
+        if (fetchId !== requestRef.current) return
+        setData(null)
+        return
+      }
+
+      if (fetchId !== requestRef.current) return
+
+      setData({
+        contractId,
+        method,
+        network: networkConfig.network,
+        note: "Simulation wiring tracked in issue #10",
       })
         .addOperation(operation)
         .setTimeout(30)
@@ -135,12 +170,23 @@ export function useSorobanContract({
       setData(null);
     } finally {
       setLoading(false);
+      if (fetchId !== requestRef.current) return
+      setError(toStellarError(err))
+    } finally {
+      if (fetchId === requestRef.current) {
+        setLoading(false)
+      }
     }
   }, [contractId, method, args, networkConfig]);
 
   useEffect(() => {
     callContract();
   }, [callContract]);
+    callContract()
+    return () => {
+      requestRef.current = -1
+    }
+  }, [callContract])
 
   return { data, loading, error, refetch: callContract };
 }

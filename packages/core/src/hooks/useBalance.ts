@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer, parseHorizonBalance } from "../utils"
-import type { Asset, Balance } from "../types"
+import { toStellarError } from "../errors"
+import type { Asset, Balance, StellarError } from "../types"
 
 export interface UseBalanceOptions {
   address?: string | null // defaults to connected wallet address
@@ -13,7 +14,7 @@ export interface UseBalanceReturn {
   balance: string | null
   balances: Balance[]
   loading: boolean
-  error: string | null
+  error: StellarError | null
   refetch: () => void
 }
 
@@ -39,11 +40,14 @@ export function useBalance({
 
   const [balances, setBalances] = useState<Balance[]>([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<StellarError | null>(null)
+
+  const requestRef = useRef(0)
 
   const fetchBalances = useCallback(async () => {
     if (!resolvedAddress) return
 
+    const fetchId = ++requestRef.current
     setLoading(true)
     setError(null)
 
@@ -51,20 +55,30 @@ export function useBalance({
       const server = getHorizonServer(network)
       const account = await server.loadAccount(resolvedAddress)
       const parsed = account.balances.map(parseHorizonBalance)
+
+      if (fetchId !== requestRef.current) return
+
       setBalances(parsed)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch balance")
+      if (fetchId !== requestRef.current) return
+      setError(toStellarError(err))
     } finally {
-      setLoading(false)
+      if (fetchId === requestRef.current) {
+        setLoading(false)
+      }
     }
   }, [resolvedAddress, network])
 
   useEffect(() => {
     fetchBalances()
 
-    if (watch) {
-      const interval = setInterval(fetchBalances, 10_000)
-      return () => clearInterval(interval)
+    const interval = watch ? setInterval(fetchBalances, 10_000) : null
+
+    return () => {
+      if (interval) {
+        clearInterval(interval)
+      }
+      requestRef.current = -1
     }
   }, [fetchBalances, watch])
 

@@ -1,4 +1,7 @@
 import type { Dispatch, SetStateAction } from "react"
+import type { StellarError } from "../errors"
+
+export type { StellarError, StellarErrorCode } from "../errors"
 
 /**
  * Represents the Stellar network environment.
@@ -35,32 +38,23 @@ export const NETWORK_CONFIGS: Record<StellarNetwork, NetworkConfig> = {
  */
 export type WalletType = "freighter" | "albedo" | "rabet"
 
-export type StellarErrorCode =
-  | "ACCOUNT_NOT_FOUND"
-  | "INSUFFICIENT_BALANCE"
-  | "NO_TRUSTLINE"
-  | "TRANSACTION_REJECTED"
-  | "WALLET_NOT_INSTALLED"
-  | "WALLET_NOT_CONNECTED"
-  | "NETWORK_ERROR"
-  | "UNKNOWN"
-
-export interface StellarError {
-  code: StellarErrorCode
-  message: string
-  raw?: unknown
-}
-
 /**
  * The current state of the wallet connection.
  */
 export interface WalletState {
+  connected: boolean;
+  address: string | null;
+  network: StellarNetwork | null;
+  wallet: WalletType | null;
+  connecting: boolean;
+  error: string | null;
+  walletNetwork: StellarNetwork | null; // Actual network from wallet extension
   connected: boolean
   address: string | null
   network: StellarNetwork | null
   wallet: WalletType | null
   connecting: boolean
-  error: string | null
+  error: StellarError | null
 }
 
 /**
