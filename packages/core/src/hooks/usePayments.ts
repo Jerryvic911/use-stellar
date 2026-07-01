@@ -1,16 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer } from "../utils"
-import { toStellarError } from "../errors"
-import type {
-  UsePaymentsOptions,
-  UsePaymentsReturn,
-  NormalizedPayment,
-  Asset,
-  StellarError,
-} from "../types"
+import type { UsePaymentsOptions, UsePaymentsReturn, NormalizedPayment, Asset } from "../types"
 import type { Horizon } from "@stellar/stellar-sdk"
+
+type PaymentRecord =
+  | Horizon.ServerApi.PaymentOperationRecord
+  | Horizon.ServerApi.CreateAccountOperationRecord
+  | Horizon.ServerApi.AccountMergeOperationRecord
+  | Horizon.ServerApi.PathPaymentOperationRecord
+  | Horizon.ServerApi.PathPaymentStrictSendOperationRecord
+  | Horizon.ServerApi.InvokeHostFunctionOperationRecord
 
 export function usePayments({
   address,
@@ -23,13 +23,15 @@ export function usePayments({
 
   const [payments, setPayments] = useState<NormalizedPayment[]>([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<StellarError | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   // Store page navigation functions from the Horizon response
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const nextRef = useRef<(() => Promise<Horizon.ServerApi.CollectionPage<any>>) | null>(null)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const prevRef = useRef<(() => Promise<Horizon.ServerApi.CollectionPage<any>>) | null>(null)
+  const nextRef = useRef<(() => Promise<Horizon.ServerApi.CollectionPage<PaymentRecord>>) | null>(
+    null
+  )
+  const prevRef = useRef<(() => Promise<Horizon.ServerApi.CollectionPage<PaymentRecord>>) | null>(
+    null
+  )
 
   const [hasNext, setHasNext] = useState(false)
   const [hasPrev, setHasPrev] = useState(false)
@@ -63,7 +65,7 @@ export function usePayments({
       setHasNext(res.records.length >= limit)
       setHasPrev(!!cursor)
     } catch (err) {
-      setError(toStellarError(err))
+      setError(err instanceof Error ? err.message : "Failed to fetch payment history")
     } finally {
       setLoading(false)
     }
@@ -84,7 +86,7 @@ export function usePayments({
       setHasNext(res.records.length >= limit)
       setHasPrev(true)
     } catch (err) {
-      setError(toStellarError(err))
+      setError(err instanceof Error ? err.message : "Failed to fetch next page")
     } finally {
       setLoading(false)
     }
@@ -105,7 +107,7 @@ export function usePayments({
       setHasNext(true)
       setHasPrev(res.records.length >= limit)
     } catch (err) {
-      setError(toStellarError(err))
+      setError(err instanceof Error ? err.message : "Failed to fetch previous page")
     } finally {
       setLoading(false)
     }
@@ -128,7 +130,7 @@ export function usePayments({
 }
 
 // ── Normalize Payment Operations ───────────────────────────────────────────
-function normalizePayment(record: any, address: string): NormalizedPayment {
+function normalizePayment(record: PaymentRecord, address: string): NormalizedPayment {
   const type = record.type
   const id = record.id
   const txHash = record.transaction_hash
