@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer } from "../utils"
@@ -127,7 +128,7 @@ export function usePayments({
 }
 
 // ── Normalize Payment Operations ───────────────────────────────────────────
-function normalizePayment(record: unknown, address: string): NormalizedPayment {
+function normalizePayment(record: any, address: string): NormalizedPayment {
   const type = record.type
   const id = record.id
   const txHash = record.transaction_hash
